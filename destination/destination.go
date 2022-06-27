@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/conduitio/conduit-connector-redis/config"
+	"github.com/conduitio-labs/conduit-connector-redis/config"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/gomodule/redigo/redis"
 )

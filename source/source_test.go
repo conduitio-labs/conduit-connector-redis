@@ -24,8 +24,8 @@ import (
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
-	"github.com/conduitio/conduit-connector-redis/config"
-	"github.com/conduitio/conduit-connector-redis/source/mocks"
+	"github.com/conduitio-labs/conduit-connector-redis/config"
+	"github.com/conduitio-labs/conduit-connector-redis/source/mocks"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

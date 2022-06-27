@@ -1,4 +1,4 @@
-module github.com/conduitio/conduit-connector-redis
+module github.com/conduitio-labs/conduit-connector-redis
 
 go 1.18
 
