@@ -25,9 +25,9 @@ import (
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
-	"github.com/conduitio/conduit-connector-redis/config"
-	"github.com/conduitio/conduit-connector-redis/destination"
-	"github.com/conduitio/conduit-connector-redis/source"
+	"github.com/conduitio-labs/conduit-connector-redis/config"
+	"github.com/conduitio-labs/conduit-connector-redis/destination"
+	"github.com/conduitio-labs/conduit-connector-redis/source"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"go.uber.org/goleak"
 )

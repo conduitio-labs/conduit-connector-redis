@@ -17,9 +17,9 @@ limitations under the License.
 package main
 
 import (
-	redis "github.com/conduitio/conduit-connector-redis"
-	"github.com/conduitio/conduit-connector-redis/destination"
-	source "github.com/conduitio/conduit-connector-redis/source"
+	redis "github.com/conduitio-labs/conduit-connector-redis"
+	"github.com/conduitio-labs/conduit-connector-redis/destination"
+	source "github.com/conduitio-labs/conduit-connector-redis/source"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 )
 
