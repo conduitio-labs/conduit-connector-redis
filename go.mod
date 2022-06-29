@@ -3,7 +3,7 @@ module github.com/conduitio-labs/conduit-connector-redis
 go 1.18
 
 require (
-	github.com/alicebob/miniredis/v2 v2.21.0
+	github.com/alicebob/miniredis/v2 v2.22.0
 	github.com/conduitio/conduit-connector-sdk v0.2.1-0.20220530152250-733149cddc0b
 	github.com/gomodule/redigo v1.8.8
 	github.com/rafaeljusto/redigomock v2.4.0+incompatible
