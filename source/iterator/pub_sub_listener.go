@@ -107,23 +107,20 @@ func (i *PubSubIterator) startListener(ctx context.Context) func() error {
 			default:
 				switch n := i.psc.Receive().(type) {
 				case redis.Message:
-					key := fmt.Sprintf("%s_%d", n.Channel, time.Now().UnixNano())
-					// no position set, as redis doesn't persist the message, so message once lost can't be recovered
-					data := sdk.Record{
-						Metadata: map[string]string{
-							"type":    "message",
-							"channel": n.Channel,
-						},
-						// a random position, to keep conduit server happy
-						Position:  []byte(key),
-						CreatedAt: time.Now(),
-						Key:       sdk.RawData(n.Channel),
-						Payload:   sdk.RawData(n.Data),
+					metadata := sdk.Metadata{
+						"type":    "message",
+						"channel": n.Channel,
 					}
+					metadata.SetCreatedAt(time.Now())
 
 					// acquire lock before appending the new records to records slice, to avoid race between Next() and append
 					i.mux.Lock()
-					i.records = append(i.records, data)
+					i.records = append(i.records, sdk.Util.Source.NewRecordCreate(
+						[]byte(fmt.Sprintf("%s_%d", n.Channel, time.Now().UnixNano())),
+						metadata,
+						sdk.RawData(n.Channel),
+						sdk.RawData(n.Data),
+					))
 					i.mux.Unlock()
 				case redis.Subscription:
 					// this message is only received at time of successful subscription/unsubscription

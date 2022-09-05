@@ -70,7 +70,7 @@ func TestNext(t *testing.T) {
 		Position: nil,
 		Metadata: nil,
 		Key:      nil,
-		Payload:  sdk.RawData("dummy_payload"),
+		Payload:  sdk.Change{After: sdk.RawData("dummy_payload")},
 	}
 	cdc.mux = &sync.Mutex{}
 	cdc.records = append(cdc.records, dummyRec)
@@ -175,13 +175,13 @@ func TestNewCDCIterator_Next(t *testing.T) {
 			}
 			assert.NoError(t, err)
 			assert.NotEmpty(t, rec.Payload)
-			assert.Equal(t, string(rec.Payload.Bytes()), testMessage)
+			assert.Equal(t, string(rec.Payload.After.Bytes()), testMessage)
 
 			cancel()
 			// 2 messages were published, should not get empty record
 			rec, err = res.Next(ctx)
 			assert.NotEmpty(t, rec)
-			assert.Equal(t, string(rec.Payload.Bytes()), testMessage1)
+			assert.Equal(t, string(rec.Payload.After.Bytes()), testMessage1)
 			assert.NoError(t, err)
 
 			// no more messages, try Next again

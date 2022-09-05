@@ -196,7 +196,7 @@ func TestWrite(t *testing.T) {
 		{
 			name: "invalid channel",
 			data: sdk.Record{
-				Payload: sdk.RawData(validJSON),
+				Payload: sdk.Change{After: sdk.RawData(validJSON)},
 			},
 			fn: func(conn *redigomock.Conn) {
 				conn.GenericCommand("PUBLISH").ExpectError(fmt.Errorf("invalid channel"))
@@ -211,7 +211,7 @@ func TestWrite(t *testing.T) {
 		}, {
 			name: "pubsub success",
 			data: sdk.Record{
-				Payload: sdk.RawData(validJSON),
+				Payload: sdk.Change{After: sdk.RawData(validJSON)},
 			},
 			fn: func(conn *redigomock.Conn) {
 				conn.GenericCommand("PUBLISH").Expect(1).ExpectError(nil)
@@ -227,7 +227,7 @@ func TestWrite(t *testing.T) {
 		{
 			name: "stream success",
 			data: sdk.Record{
-				Payload: sdk.RawData(validJSON),
+				Payload: sdk.Change{After: sdk.RawData(validJSON)},
 			},
 			err: nil,
 			fn: func(conn *redigomock.Conn) {
@@ -242,7 +242,7 @@ func TestWrite(t *testing.T) {
 		}, {
 			name: "stream failed",
 			data: sdk.Record{
-				Payload: sdk.RawData(validJSON),
+				Payload: sdk.Change{After: sdk.RawData(validJSON)},
 			},
 			err: fmt.Errorf("error streaming message to key(dummy_key):dummy_error"),
 			fn: func(conn *redigomock.Conn) {
@@ -258,7 +258,7 @@ func TestWrite(t *testing.T) {
 		{
 			name: "invalid mode",
 			data: sdk.Record{
-				Payload: sdk.RawData(invalidJSON),
+				Payload: sdk.Change{After: sdk.RawData(invalidJSON)},
 			},
 			err: fmt.Errorf("invalid mode(test) encountered"),
 			destination: Destination{
@@ -276,11 +276,12 @@ func TestWrite(t *testing.T) {
 				tt.fn(conn)
 			}
 			tt.destination.client = conn
-			err := tt.destination.Write(context.Background(), tt.data)
+			n, err := tt.destination.Write(context.Background(), []sdk.Record{tt.data})
 			if tt.err != nil {
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, tt.err.Error())
 			} else {
+				assert.Equal(t, n, 1)
 				assert.Nil(t, err)
 			}
 		})

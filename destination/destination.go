@@ -40,7 +40,48 @@ type Destination struct {
 
 // NewDestination returns an instance of sdk.Destination
 func NewDestination() sdk.Destination {
-	return &Destination{}
+	return sdk.DestinationWithMiddleware(&Destination{}, sdk.DefaultDestinationMiddleware()...)
+}
+
+// Parameters returns a map of named Parameters that describe how to configure the Source.
+func (d *Destination) Parameters() map[string]sdk.Parameter {
+	return map[string]sdk.Parameter{
+		config.KeyHost: {
+			Default:     "localhost",
+			Required:    false,
+			Description: "host to the redis source.",
+		},
+		config.KeyPort: {
+			Default:     "6379",
+			Required:    false,
+			Description: "port to the redis source",
+		},
+		config.KeyRedisKey: {
+			Default:     "",
+			Required:    true,
+			Description: "key name for connector to read.",
+		},
+		config.KeyDatabase: {
+			Default:     "0",
+			Required:    false,
+			Description: "database name for the redis source",
+		},
+		config.KeyPassword: {
+			Default:     "",
+			Required:    false,
+			Description: "Password to the redis source.",
+		},
+		config.KeyUsername: {
+			Default:     "",
+			Required:    false,
+			Description: "Username to the redis source.",
+		},
+		config.KeyMode: {
+			Default:     "pubsub",
+			Required:    false,
+			Description: "Sets the connector's operation mode. Available modes: ['pubsub', 'stream']",
+		},
+	}
 }
 
 // Configure sets up the destination by validating and parsing the config
@@ -99,36 +140,43 @@ func (d *Destination) validateKey(client redis.Conn) error {
 
 // Write receives the record to be written and based on the mode either publishes to PUB/SUB channel
 // or add as key-value pair to stream using XADD, the id of the newly added key is generated automatically
-func (d *Destination) Write(ctx context.Context, rec sdk.Record) error {
+func (d *Destination) Write(ctx context.Context, rec []sdk.Record) (int, error) {
 	key := d.config.RedisKey
 
 	switch d.config.Mode {
 	case config.ModePubSub:
-		_, err := d.client.Do("PUBLISH", key, string(rec.Payload.Bytes()))
-		if err != nil {
-			return fmt.Errorf("error publishing message to channel(%s): %w", key, err)
+		for i, r := range rec {
+			_, err := d.client.Do("PUBLISH", key, string(r.Payload.After.Bytes()))
+			if err != nil {
+				return i, fmt.Errorf("error publishing message to channel(%s): %w", key, err)
+			}
 		}
-		return nil
+
+		return len(rec), nil
 
 	case config.ModeStream:
+		for i, r := range rec {
+			keyValArgs, err := payloadToStreamArgs(r.Payload.After)
+			if err != nil {
+				return i, fmt.Errorf("invalid payload: %w", err)
+			}
 
-		keyValArgs, err := payloadToStreamArgs(rec.Payload)
-		if err != nil {
-			return fmt.Errorf("invalid payload: %w", err)
-		}
-		args := []interface{}{
-			key, "*",
+			args := []interface{}{
+				key, "*",
+			}
+
+			args = append(args, keyValArgs...)
+
+			_, err = d.client.Do("XADD", args...)
+			if err != nil {
+				return i, fmt.Errorf("error streaming message to key(%s):%w", key, err)
+			}
 		}
 
-		args = append(args, keyValArgs...)
+		return len(rec), nil
 
-		_, err = d.client.Do("XADD", args...)
-		if err != nil {
-			return fmt.Errorf("error streaming message to key(%s):%w", key, err)
-		}
-		return nil
 	default:
-		return fmt.Errorf("invalid mode(%s) encountered", string(d.config.Mode))
+		return 0, fmt.Errorf("invalid mode(%s) encountered", string(d.config.Mode))
 	}
 }
 

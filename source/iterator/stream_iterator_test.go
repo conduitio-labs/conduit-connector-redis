@@ -174,15 +174,14 @@ func TestStartIterator(t *testing.T) {
 	case cache := <-cdc.caches:
 		cancel()
 		assert.Len(t, cache, 1)
-		assert.Equal(t, []sdk.Record{{
-			Position: []byte("1652107432000-0"),
-			Metadata: map[string]string{
-				"key": key,
-			},
-			CreatedAt: time.UnixMilli(1652107432000),
-			Key:       sdk.RawData(key),
-			Payload:   sdk.RawData(`{"key":"value"}`),
-		}}, cache)
+		createdAt, err := cache[0].Metadata.GetCreatedAt()
+		assert.NoError(t, err)
+		assert.Equal(t, sdk.Position("1652107432000-0"), cache[0].Position)
+		assert.Equal(t, sdk.OperationCreate, cache[0].Operation)
+		assert.Equal(t, key, cache[0].Metadata["key"])
+		assert.Equal(t, time.UnixMilli(1652107432000), createdAt)
+		assert.Equal(t, cache[0].Key, sdk.RawData(key))
+		assert.Equal(t, cache[0].Payload, sdk.Change{After: sdk.RawData(`{"key":"value"}`)})
 	case <-ctx.Done():
 		t.Error("no data received in cache channel")
 	}

@@ -200,6 +200,11 @@ func toRecords(resp []interface{}) ([]sdk.Record, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		metadata := sdk.Metadata{
+			"key": string(key),
+		}
+
 		for _, iID := range idList {
 			position, fieldList, err := parsePositionData(iID)
 			if err != nil {
@@ -213,15 +218,15 @@ func toRecords(resp []interface{}) ([]sdk.Record, error) {
 			if err != nil {
 				return records, fmt.Errorf("error marshaling the map: %w", err)
 			}
-			records = append(records, sdk.Record{
-				Position: position,
-				Metadata: map[string]string{
-					"key": string(key),
-				},
-				CreatedAt: getTimeFromPosition(string(position)),
-				Key:       sdk.RawData(key),
-				Payload:   sdk.RawData(payload),
-			})
+
+			metadata.SetCreatedAt(getTimeFromPosition(string(position)))
+
+			records = append(records, sdk.Util.Source.NewRecordCreate(
+				position,
+				metadata,
+				sdk.RawData(key),
+				sdk.RawData(payload),
+			))
 		}
 	}
 	return records, nil

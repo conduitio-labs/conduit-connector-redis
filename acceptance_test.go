@@ -90,14 +90,14 @@ type AcceptanceTestDriver struct {
 //	"key": "dummy_key",
 //	"payload": "{\"key\":\"value\"}"
 //}
-func (d AcceptanceTestDriver) GenerateRecord(t *testing.T) sdk.Record {
+func (d AcceptanceTestDriver) GenerateRecord(_ *testing.T, _ sdk.Operation) sdk.Record {
 	return sdk.Record{
-		Metadata: map[string]string{
-			"key": key,
-		},
-		CreatedAt: time.Time{},
+		Operation: sdk.OperationCreate,
+		Metadata:  sdk.Metadata{"key": key},
 		Key:       sdk.RawData(key),
-		Payload:   sdk.RawData(fmt.Sprintf(`{"%s":"%s"}`, d.randString(32), d.randString(32))),
+		Payload: sdk.Change{After: sdk.RawData(
+			fmt.Sprintf(`{"%s":"%s"}`, d.randString(32), d.randString(32)),
+		)},
 	}
 }
 
