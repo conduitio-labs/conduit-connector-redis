@@ -191,7 +191,7 @@ func (d *Destination) Teardown(_ context.Context) error {
 
 // payloadToStreamArgs converts the payload from the record to args to be sent in redis command
 func payloadToStreamArgs(payload sdk.Data) ([]interface{}, error) {
-	recMap := make(map[string]string)
+	recMap := make(map[string]interface{})
 
 	if err := json.Unmarshal(payload.Bytes(), &recMap); err != nil {
 		return nil, fmt.Errorf("invalid json received in payload: %w", err)
