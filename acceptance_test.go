@@ -71,7 +71,7 @@ func TestAcceptance(t *testing.T) {
 			},
 		},
 		},
-		rand: rand.New(rand.NewSource(time.Now().UnixNano())), // nolint: gosec // only used for testing purpose
+		rand: rand.New(rand.NewSource(time.Now().UnixNano())), //nolint:gosec // only used for testing purpose
 	})
 }
 
