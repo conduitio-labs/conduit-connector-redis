@@ -71,7 +71,7 @@ func TestAcceptance(t *testing.T) {
 			},
 		},
 		},
-		rand: rand.New(rand.NewSource(time.Now().UnixNano())), // nolint: gosec // only used for testing purpose
+		rand: rand.New(rand.NewSource(time.Now().UnixNano())), //nolint:gosec // only used for testing purpose
 	})
 }
 
@@ -80,17 +80,8 @@ type AcceptanceTestDriver struct {
 	sdk.ConfigurableAcceptanceTestDriver
 }
 
-// GenerateRecord overrides the pre-defined generate record function to generate the records in required format
-// Sample Record:
-// {
-//	"metadata": {
-//		"key": "dummy_key"
-//	},
-//	"created_at": "0001-01-01 00:00:00 +0000 UTC",
-//	"key": "dummy_key",
-//	"payload": "{\"key\":\"value\"}"
-//}
-func (d AcceptanceTestDriver) GenerateRecord(_ *testing.T, _ sdk.Operation) sdk.Record {
+// GenerateRecord overrides the pre-defined generate record function to generate the records in required format.
+func (d AcceptanceTestDriver) GenerateRecord(t *testing.T) sdk.Record {
 	return sdk.Record{
 		Operation: sdk.OperationCreate,
 		Metadata:  sdk.Metadata{"key": key},
