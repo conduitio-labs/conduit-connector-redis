@@ -7,7 +7,7 @@ require (
 	github.com/conduitio/conduit-connector-sdk v0.2.1-0.20220830103153-f1e73bed9120
 	github.com/gomodule/redigo v1.8.8
 	github.com/rafaeljusto/redigomock v2.4.0+incompatible
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	go.uber.org/goleak v1.1.12
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
 )
