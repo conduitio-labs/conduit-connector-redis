@@ -43,7 +43,53 @@ type Iterator interface {
 
 // NewSource returns an instance of sdk.Source
 func NewSource() sdk.Source {
-	return &Source{}
+	return sdk.SourceWithMiddleware(&Source{}, sdk.DefaultSourceMiddleware()...)
+}
+
+// Parameters returns a map of named Parameters that describe how to configure the Source.
+func (s *Source) Parameters() map[string]sdk.Parameter {
+	return map[string]sdk.Parameter{
+		config.KeyHost: {
+			Default:     "localhost",
+			Required:    false,
+			Description: "host to the redis source.",
+		},
+		config.KeyPort: {
+			Default:     "6379",
+			Required:    false,
+			Description: "port to the redis source",
+		},
+		config.KeyRedisKey: {
+			Default:     "",
+			Required:    true,
+			Description: "key name for connector to read.",
+		},
+		config.KeyDatabase: {
+			Default:     "0",
+			Required:    false,
+			Description: "database name for the redis source",
+		},
+		config.KeyPassword: {
+			Default:     "",
+			Required:    false,
+			Description: "Password to the redis source.",
+		},
+		config.KeyUsername: {
+			Default:     "",
+			Required:    false,
+			Description: "Username to the redis source.",
+		},
+		config.KeyMode: {
+			Default:     "pubsub",
+			Required:    false,
+			Description: "Sets the connector's operation mode. Available modes: ['pubsub', 'stream']",
+		},
+		config.KeyPollingPeriod: {
+			Default:     "1s",
+			Required:    false,
+			Description: "Time duration between successive data polling from streams",
+		},
+	}
 }
 
 // Configure validates the passed config and prepares the source connector

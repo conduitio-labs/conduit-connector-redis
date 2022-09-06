@@ -81,14 +81,14 @@ type AcceptanceTestDriver struct {
 }
 
 // GenerateRecord overrides the pre-defined generate record function to generate the records in required format.
-func (d AcceptanceTestDriver) GenerateRecord(t *testing.T) sdk.Record {
+func (d AcceptanceTestDriver) GenerateRecord(t *testing.T, operation sdk.Operation) sdk.Record {
 	return sdk.Record{
-		Metadata: map[string]string{
-			"key": key,
-		},
-		CreatedAt: time.Time{},
+		Operation: sdk.OperationCreate,
+		Metadata:  sdk.Metadata{"key": key},
 		Key:       sdk.RawData(key),
-		Payload:   sdk.RawData(fmt.Sprintf(`{"%s":"%s"}`, d.randString(32), d.randString(32))),
+		Payload: sdk.Change{After: sdk.RawData(
+			fmt.Sprintf(`{"%s":"%s"}`, d.randString(32), d.randString(32)),
+		)},
 	}
 }
 
