@@ -15,16 +15,15 @@
 package redis
 
 import (
+	"github.com/conduitio-labs/conduit-connector-redis/destination"
+	"github.com/conduitio-labs/conduit-connector-redis/source"
+
 	sdk "github.com/conduitio/conduit-connector-sdk"
 )
 
-// Specification returns the connector's specification.
-func Specification() sdk.Specification {
-	return sdk.Specification{
-		Name:        "Redis",
-		Summary:     "A Redis source and destination plugin for Conduit, written in Go.",
-		Description: "A Redis source and destination plugin for Conduit, written in Go. It supports Redis Pub/Sub and Streams.",
-		Version:     "v0.1.0",
-		Author:      "Gophers Lab Technologies Pvt Ltd",
-	}
+// Connector represents a sdk.Connector of Oracle.
+var Connector = sdk.Connector{
+	NewSpecification: Specification,
+	NewSource:        source.NewSource,
+	NewDestination:   destination.NewDestination,
 }

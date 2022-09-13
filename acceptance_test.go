@@ -1,18 +1,16 @@
-/*
-Copyright © 2022 Meroxa, Inc. & Gophers Lab Technologies Pvt. Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+// Copyright © 2022 Meroxa, Inc. & Gophers Lab Technologies Pvt. Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package redis
 
@@ -26,8 +24,6 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/conduitio-labs/conduit-connector-redis/config"
-	"github.com/conduitio-labs/conduit-connector-redis/destination"
-	"github.com/conduitio-labs/conduit-connector-redis/source"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"go.uber.org/goleak"
 )
@@ -58,11 +54,7 @@ func TestAcceptance(t *testing.T) {
 
 	sdk.AcceptanceTest(t, AcceptanceTestDriver{
 		ConfigurableAcceptanceTestDriver: sdk.ConfigurableAcceptanceTestDriver{Config: sdk.ConfigurableAcceptanceTestDriverConfig{
-			Connector: sdk.Connector{
-				NewSpecification: Specification,
-				NewSource:        source.NewSource,
-				NewDestination:   destination.NewDestination,
-			},
+			Connector:         Connector,
 			SourceConfig:      sourceConf,
 			DestinationConfig: destConf,
 			GoleakOptions:     []goleak.Option{goleak.IgnoreCurrent()},
