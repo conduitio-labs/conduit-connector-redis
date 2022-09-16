@@ -121,7 +121,7 @@ In case of Pub/Sub mode there is no validation on channel type, as the channel n
 
 ### Writer
 
-The Redis destination implements only sync Write function, whenever a new message is received, it is pushed to redis key immediately.
+The Redis destination implements Write function, whenever a new messages are received, it is pushed to redis key.
 In case of Stream Mode, the message should be of valid type `map[string]string`, an odd number of arguments will result in an error.
 
 ### Configuration
