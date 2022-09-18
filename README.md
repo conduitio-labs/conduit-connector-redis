@@ -36,14 +36,18 @@ The listener will stop only when the pipeline is paused or any error is encounte
 Whenever a new message is received, a new sdk.Record is created with received message as `payload`. The resulting sdk.Record has the following format:
 ```json
 {
+  "operation": "create",
   "metadata": {
     "type": "message",
-    "channel": "<channel>"
+    "channel": "<channel>",
+    "opencdc.createdAt": "<current_time in RFC3339 format>"
   },
   "position": "<channel>_<current_ns_timestamp>",
   "key": "<channel>",
-  "payload": "<message received from channel>",
-  "created_at": "<current_time in RFC3339 format>"
+  "payload": {
+    "before": null,
+    "after": "<message received from channel>"
+  }
 }
 ```
 Where `position` value is an arbitrary position to satisfy the conduit server and same value is used in `key` to uniquely identify the messages
@@ -60,12 +64,15 @@ The resulting sdk.Record has the following format:
 ```json
 {
   "metadata": {
-    "key": "<key>"
+    "key": "<key>",
+    "opencdc.createdAt": "<time from message id>"
   },
   "position": "<stream_msg_id>",
   "key": "<key>",
-  "payload": "<JSON of key-val pair from stream>",
-  "created_at": "<time>"
+  "payload": {
+    "before": null,
+    "after": "<JSON of key-val pair from stream>"
+  }
 }
 ```
 
