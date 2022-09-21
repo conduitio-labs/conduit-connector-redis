@@ -21,7 +21,7 @@ import (
 	sdk "github.com/conduitio/conduit-connector-sdk"
 )
 
-// Connector represents a sdk.Connector of Oracle.
+// Connector represents a sdk.Connector of Redis.
 var Connector = sdk.Connector{
 	NewSpecification: Specification,
 	NewSource:        source.NewSource,
