@@ -15,6 +15,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -110,7 +111,7 @@ func Parse(cfg map[string]string) (Config, error) {
 	if db := cfg[KeyDatabase]; db != "" {
 		dbInt, err := strconv.Atoi(db)
 		if err != nil {
-			return Config{}, fmt.Errorf("invalid database passed, should be a valid int")
+			return Config{}, errors.New("invalid database passed, should be a valid int")
 		}
 
 		config.Database = dbInt
