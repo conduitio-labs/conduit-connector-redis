@@ -15,6 +15,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -33,7 +34,6 @@ const (
 	defaultHost          = "localhost"
 	defaultPort          = "6379"
 	defaultPollingPeriod = "1s"
-	defaultDatabase      = "0"
 )
 
 type Config struct {
@@ -75,23 +75,13 @@ var modeAll = []string{string(ModePubSub), string(ModeStream)}
 
 // Parse parses and validates the supplied config
 func Parse(cfg map[string]string) (Config, error) {
-	host, ok := cfg[KeyHost]
-	if !ok {
-		host = defaultHost
-	}
-
-	port, ok := cfg[KeyPort]
-	if !ok {
-		port = defaultPort
-	}
-
 	key, ok := cfg[KeyRedisKey]
 	if !ok {
 		return Config{}, requiredConfigErr(KeyRedisKey)
 	}
 
-	pollingPeriod, ok := cfg[KeyPollingPeriod]
-	if !ok {
+	pollingPeriod := cfg[KeyPollingPeriod]
+	if pollingPeriod == "" {
 		pollingPeriod = defaultPollingPeriod
 	}
 
@@ -100,32 +90,41 @@ func Parse(cfg map[string]string) (Config, error) {
 		return Config{}, fmt.Errorf("invalid polling duration passed(%v)", pollingPeriod)
 	}
 
-	db, ok := cfg[KeyDatabase]
-	if !ok || db == "" {
-		db = defaultDatabase
-	}
-
-	dbInt, err := strconv.Atoi(db)
-	if err != nil {
-		return Config{}, fmt.Errorf("invalid database passed, should be a valid int")
-	}
-
 	config := Config{
-		Host:          host,
 		RedisKey:      key,
-		Port:          port,
-		Database:      dbInt,
+		Host:          defaultHost,
+		Port:          defaultPort,
 		Password:      cfg[KeyPassword],
 		Username:      cfg[KeyUsername],
 		Mode:          ModePubSub,
 		PollingPeriod: pollingDuration,
 	}
+
+	if host := cfg[KeyHost]; host != "" {
+		config.Host = host
+	}
+
+	if port := cfg[KeyPort]; port != "" {
+		config.Port = port
+	}
+
+	if db := cfg[KeyDatabase]; db != "" {
+		dbInt, err := strconv.Atoi(db)
+		if err != nil {
+			return Config{}, errors.New("invalid database passed, should be a valid int")
+		}
+
+		config.Database = dbInt
+	}
+
 	if modeRaw := cfg[KeyMode]; modeRaw != "" {
 		if !isModeSupported(modeRaw) {
 			return Config{}, fmt.Errorf("%q contains unsupported value %q, expected one of %v", KeyMode, modeRaw, modeAll)
 		}
+
 		config.Mode = Mode(modeRaw)
 	}
+
 	return config, nil
 }
 

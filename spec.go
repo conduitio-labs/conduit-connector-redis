@@ -26,7 +26,7 @@ var version = "v0.0.0-dev"
 // Specification returns the connector's specification.
 func Specification() sdk.Specification {
 	return sdk.Specification{
-		Name:        "Redis",
+		Name:        "redis",
 		Summary:     "A Redis source and destination plugin for Conduit, written in Go.",
 		Description: "A Redis source and destination plugin for Conduit, written in Go. It supports Redis Pub/Sub and Streams.",
 		Version:     version,
