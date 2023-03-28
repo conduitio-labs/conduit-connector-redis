@@ -9,7 +9,7 @@ test:
 	go test $(GOTEST_FLAGS) -race ./...
 
 lint:
-	golangci-lint run -c .golangci.yml --go=1.18
+	golangci-lint run -c .golangci.yml --go=1.20
 
 clean:
 	golangci-lint cache clean

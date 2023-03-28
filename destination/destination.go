@@ -144,7 +144,7 @@ func (d *Destination) Write(ctx context.Context, rec []sdk.Record) (int, error) 
 	switch d.config.Mode {
 	case config.ModePubSub:
 		for i, r := range rec {
-			_, err := d.client.Do("PUBLISH", key, string(r.Payload.After.Bytes()))
+			_, err := d.doWithCtx(ctx, "PUBLISH", key, string(r.Payload.After.Bytes()))
 			if err != nil {
 				return i, fmt.Errorf("error publishing message to channel(%s): %w", key, err)
 			}
@@ -185,6 +185,14 @@ func (d *Destination) Teardown(_ context.Context) error {
 		return d.client.Close()
 	}
 	return nil
+}
+
+func (d *Destination) doWithCtx(ctx context.Context, cmd string, args ...interface{}) (interface{}, error) {
+	cwt, ok := d.client.(redis.ConnWithContext)
+	if !ok {
+		return d.client.Do(cmd, args)
+	}
+	return cwt.DoContext(ctx, cmd, args...)
 }
 
 // payloadToStreamArgs converts the payload from the record to args to be sent in redis command
