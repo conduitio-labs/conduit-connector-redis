@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/alicebob/miniredis/v2 v2.30.4
-	github.com/conduitio/conduit-connector-sdk v0.7.0
+	github.com/conduitio/conduit-connector-sdk v0.7.1
 	github.com/gomodule/redigo v1.8.9
 	github.com/rafaeljusto/redigomock v2.4.0+incompatible
 	github.com/stretchr/testify v1.8.4
