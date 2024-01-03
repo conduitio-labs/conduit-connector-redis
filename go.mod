@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.1
 
 require (
-	github.com/alicebob/miniredis/v2 v2.31.0
+	github.com/alicebob/miniredis/v2 v2.31.1
 	github.com/conduitio/conduit-connector-sdk v0.8.0
 	github.com/gomodule/redigo v1.8.9
 	github.com/rafaeljusto/redigomock v2.4.0+incompatible
