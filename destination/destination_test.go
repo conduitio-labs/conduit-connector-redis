@@ -132,7 +132,7 @@ func TestValidateKey(t *testing.T) {
 		{
 			name: "validate pubsub",
 			mode: config.ModePubSub,
-			fn:   func(conn *redigomock.Conn) {},
+			fn:   func(*redigomock.Conn) {},
 			err:  nil,
 		}, {
 			name: "validate stream, type none",
@@ -158,7 +158,7 @@ func TestValidateKey(t *testing.T) {
 		}, {
 			name: "invalid mode",
 			mode: config.Mode("dummy_mode"),
-			fn:   func(conn *redigomock.Conn) {},
+			fn:   func(*redigomock.Conn) {},
 			err:  fmt.Errorf("invalid mode(dummy_mode) encountered"),
 		},
 	}
