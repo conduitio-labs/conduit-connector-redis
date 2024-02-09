@@ -114,7 +114,7 @@ func TestStreamIterator_HasNext(t *testing.T) {
 		response: true,
 	}, {
 		name:     "no record in buffer",
-		fn:       func(c *StreamIterator) {},
+		fn:       func(*StreamIterator) {},
 		response: false,
 	}, {
 		name: "record in buffer, tomb dead",

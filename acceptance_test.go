@@ -53,15 +53,16 @@ func TestAcceptance(t *testing.T) {
 	}
 
 	sdk.AcceptanceTest(t, AcceptanceTestDriver{
-		ConfigurableAcceptanceTestDriver: sdk.ConfigurableAcceptanceTestDriver{Config: sdk.ConfigurableAcceptanceTestDriverConfig{
-			Connector:         Connector,
-			SourceConfig:      sourceConf,
-			DestinationConfig: destConf,
-			GoleakOptions:     []goleak.Option{goleak.IgnoreCurrent()},
-			AfterTest: func(t *testing.T) {
-				mr.FlushAll()
+		ConfigurableAcceptanceTestDriver: sdk.ConfigurableAcceptanceTestDriver{
+			Config: sdk.ConfigurableAcceptanceTestDriverConfig{
+				Connector:         Connector,
+				SourceConfig:      sourceConf,
+				DestinationConfig: destConf,
+				GoleakOptions:     []goleak.Option{goleak.IgnoreCurrent()},
+				AfterTest: func(*testing.T) {
+					mr.FlushAll()
+				},
 			},
-		},
 		},
 		rand: rand.New(rand.NewSource(time.Now().UnixNano())), //nolint:gosec // only used for testing purpose
 	})
