@@ -1,6 +1,7 @@
 module github.com/conduitio-labs/conduit-connector-redis
 
 go 1.21
+toolchain go1.22.0
 
 require (
 	github.com/alicebob/miniredis/v2 v2.31.1
@@ -9,7 +10,7 @@ require (
 	github.com/gomodule/redigo v1.8.9
 	github.com/rafaeljusto/redigomock v2.4.0+incompatible
 	github.com/stretchr/testify v1.8.4
-	github.com/vektra/mockery/v2 v2.40.3
+	github.com/vektra/mockery/v2 v2.41.0
 	go.uber.org/goleak v1.3.0
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
 )
