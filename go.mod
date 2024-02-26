@@ -7,7 +7,7 @@ require (
 	github.com/alicebob/miniredis/v2 v2.31.1
 	github.com/conduitio/conduit-connector-sdk v0.8.0
 	github.com/golangci/golangci-lint v1.56.2
-	github.com/gomodule/redigo v1.9.1
+	github.com/gomodule/redigo v1.9.2
 	github.com/rafaeljusto/redigomock v2.4.0+incompatible
 	github.com/stretchr/testify v1.8.4
 	github.com/vektra/mockery/v2 v2.42.0
