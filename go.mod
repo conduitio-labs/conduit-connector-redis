@@ -1,7 +1,6 @@
 module github.com/conduitio-labs/conduit-connector-redis
 
-go 1.21
-toolchain go1.22.2
+go 1.22.2
 
 require (
 	github.com/alicebob/miniredis/v2 v2.32.1
