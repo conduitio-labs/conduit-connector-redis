@@ -5,7 +5,7 @@ go 1.22.2
 require (
 	github.com/alicebob/miniredis/v2 v2.33.0
 	github.com/conduitio/conduit-connector-sdk v0.9.1
-	github.com/golangci/golangci-lint v1.60.2
+	github.com/golangci/golangci-lint v1.60.3
 	github.com/gomodule/redigo v1.9.2
 	github.com/rafaeljusto/redigomock v2.4.0+incompatible
 	github.com/stretchr/testify v1.9.0
@@ -163,7 +163,7 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1 // indirect
 	github.com/sashamelentyev/interfacebloat v1.1.0 // indirect
 	github.com/sashamelentyev/usestdlibvars v1.27.0 // indirect
-	github.com/securego/gosec/v2 v2.20.1-0.20240820084340-81cda2f91fbe // indirect
+	github.com/securego/gosec/v2 v2.20.1-0.20240822074752-ab3f6c1c83a0 // indirect
 	github.com/shazow/go-diff v0.0.0-20160112020656-b6b7b6733b8c // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
