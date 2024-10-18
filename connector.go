@@ -17,7 +17,6 @@ package redis
 import (
 	"github.com/conduitio-labs/conduit-connector-redis/destination"
 	"github.com/conduitio-labs/conduit-connector-redis/source"
-
 	sdk "github.com/conduitio/conduit-connector-sdk"
 )
 

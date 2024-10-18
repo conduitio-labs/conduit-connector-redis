@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/conduitio/conduit-commons/opencdc"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -33,22 +33,22 @@ func (_m *Iterator) HasNext() bool {
 }
 
 // Next provides a mock function with given fields: ctx
-func (_m *Iterator) Next(ctx context.Context) (sdk.Record, error) {
+func (_m *Iterator) Next(ctx context.Context) (opencdc.Record, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Next")
 	}
 
-	var r0 sdk.Record
+	var r0 opencdc.Record
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (sdk.Record, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) (opencdc.Record, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) sdk.Record); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) opencdc.Record); ok {
 		r0 = rf(ctx)
 	} else {
-		r0 = ret.Get(0).(sdk.Record)
+		r0 = ret.Get(0).(opencdc.Record)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context) error); ok {

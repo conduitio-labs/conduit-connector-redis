@@ -22,6 +22,7 @@ import (
 
 	"github.com/conduitio-labs/conduit-connector-redis/config"
 	"github.com/conduitio-labs/conduit-connector-redis/source/iterator"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/gomodule/redigo/redis"
 )
@@ -35,7 +36,7 @@ type Source struct {
 
 type Iterator interface {
 	HasNext() bool
-	Next(ctx context.Context) (sdk.Record, error)
+	Next(ctx context.Context) (opencdc.Record, error)
 	Stop() error
 }
 
@@ -45,8 +46,8 @@ func NewSource() sdk.Source {
 }
 
 // Parameters returns a map of named Parameters that describe how to configure the Source.
-func (s *Source) Parameters() map[string]sdk.Parameter {
-	return map[string]sdk.Parameter{
+func (s *Source) Parameters() config.Parameters {
+	return map[string]config.Parameter{
 		config.KeyHost: {
 			Default:     "localhost",
 			Required:    false,
@@ -91,7 +92,7 @@ func (s *Source) Parameters() map[string]sdk.Parameter {
 }
 
 // Configure validates the passed config and prepares the source connector
-func (s *Source) Configure(ctx context.Context, cfg map[string]string) error {
+func (s *Source) Configure(ctx context.Context, cfg config.Config) error {
 	sdk.Logger(ctx).Trace().Msg("Configuring a Source Connector...")
 	conf, err := config.Parse(cfg)
 	if err != nil {
@@ -102,7 +103,7 @@ func (s *Source) Configure(ctx context.Context, cfg map[string]string) error {
 }
 
 // Open prepare the plugin to start reading records from the given position
-func (s *Source) Open(ctx context.Context, position sdk.Position) error {
+func (s *Source) Open(ctx context.Context, position opencdc.Position) error {
 	address := s.config.Host + ":" + s.config.Port
 	dialOptions := make([]redis.DialOption, 0)
 	if s.config.Password != "" {
@@ -137,19 +138,19 @@ func (s *Source) Open(ctx context.Context, position sdk.Position) error {
 }
 
 // Read gets the next object
-func (s *Source) Read(ctx context.Context) (sdk.Record, error) {
+func (s *Source) Read(ctx context.Context) (opencdc.Record, error) {
 	if !s.iterator.HasNext() {
-		return sdk.Record{}, sdk.ErrBackoffRetry
+		return opencdc.Record{}, sdk.ErrBackoffRetry
 	}
 	rec, err := s.iterator.Next(ctx)
 	if err != nil {
-		return sdk.Record{}, fmt.Errorf("error fetching next record: %w", err)
+		return opencdc.Record{}, fmt.Errorf("error fetching next record: %w", err)
 	}
 	return rec, nil
 }
 
 // Ack is called by the conduit server after the record has been successfully processed by all destination connectors
-func (s *Source) Ack(ctx context.Context, position sdk.Position) error {
+func (s *Source) Ack(ctx context.Context, position opencdc.Position) error {
 	sdk.Logger(ctx).Debug().
 		Str("position", string(position)).
 		Str("mode", string(s.config.Mode)).

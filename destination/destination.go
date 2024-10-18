@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/conduitio-labs/conduit-connector-redis/config"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/gomodule/redigo/redis"
 )
@@ -42,8 +43,8 @@ func NewDestination() sdk.Destination {
 }
 
 // Parameters returns a map of named Parameters that describe how to configure the Source.
-func (d *Destination) Parameters() map[string]sdk.Parameter {
-	return map[string]sdk.Parameter{
+func (d *Destination) Parameters() config.Parameters {
+	return map[string]config.Parameter{
 		config.KeyHost: {
 			Default:     "localhost",
 			Required:    false,
@@ -83,7 +84,7 @@ func (d *Destination) Parameters() map[string]sdk.Parameter {
 }
 
 // Configure sets up the destination by validating and parsing the config
-func (d *Destination) Configure(ctx context.Context, cfg map[string]string) error {
+func (d *Destination) Configure(ctx context.Context, cfg config.Config) error {
 	sdk.Logger(ctx).Trace().Msg("Configuring a Destination Connector...")
 	conf, err := config.Parse(cfg)
 	if err != nil {
@@ -138,7 +139,7 @@ func (d *Destination) validateKey(client redis.Conn) error {
 
 // Write receives the record to be written and based on the mode either publishes to PUB/SUB channel
 // or add as key-value pair to stream using XADD, the id of the newly added key is generated automatically
-func (d *Destination) Write(ctx context.Context, rec []sdk.Record) (int, error) {
+func (d *Destination) Write(ctx context.Context, rec []opencdc.Record) (int, error) {
 	key := d.config.RedisKey
 
 	switch d.config.Mode {
@@ -196,7 +197,7 @@ func (d *Destination) doWithCtx(ctx context.Context, cmd string, args ...interfa
 }
 
 // payloadToStreamArgs converts the payload from the record to args to be sent in redis command
-func payloadToStreamArgs(payload sdk.Data) ([]interface{}, error) {
+func payloadToStreamArgs(payload opencdc.Data) ([]interface{}, error) {
 	recMap := make(map[string]interface{})
 
 	if err := json.Unmarshal(payload.Bytes(), &recMap); err != nil {

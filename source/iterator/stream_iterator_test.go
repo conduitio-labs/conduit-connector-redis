@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/conduitio/conduit-commons/opencdc"
 	"github.com/rafaeljusto/redigomock"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/tomb.v2"
@@ -30,7 +30,7 @@ import (
 func TestNewStreamIterator(t *testing.T) {
 	tests := []struct {
 		name           string
-		pos            sdk.Position
+		pos            opencdc.Position
 		fn             func(conn *redigomock.Conn)
 		pollingPeriod  time.Duration
 		err            error
@@ -84,14 +84,14 @@ func TestStreamIterator_Next(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	tmbWithCtx, _ := tomb.WithContext(ctx)
 	cdc := &StreamIterator{
-		buffer: make(chan sdk.Record, 1),
-		caches: make(chan []sdk.Record, 1),
+		buffer: make(chan opencdc.Record, 1),
+		caches: make(chan []opencdc.Record, 1),
 		tomb:   tmbWithCtx,
 	}
 	cdc.tomb.Go(cdc.flush)
 
-	in := sdk.Record{Position: []byte("some_position")}
-	cdc.caches <- []sdk.Record{in}
+	in := opencdc.Record{Position: []byte("some_position")}
+	cdc.caches <- []opencdc.Record{in}
 	out, err := cdc.Next(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, in, out)
@@ -109,7 +109,7 @@ func TestStreamIterator_HasNext(t *testing.T) {
 	}{{
 		name: "Has next",
 		fn: func(c *StreamIterator) {
-			c.buffer <- sdk.Record{}
+			c.buffer <- opencdc.Record{}
 		},
 		response: true,
 	}, {
@@ -120,13 +120,13 @@ func TestStreamIterator_HasNext(t *testing.T) {
 		name: "record in buffer, tomb dead",
 		fn: func(c *StreamIterator) {
 			c.tomb.Kill(errors.New("random error"))
-			c.buffer <- sdk.Record{}
+			c.buffer <- opencdc.Record{}
 		},
 		response: true,
 	}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cdc := &StreamIterator{buffer: make(chan sdk.Record, 1), tomb: &tomb.Tomb{}}
+			cdc := &StreamIterator{buffer: make(chan opencdc.Record, 1), tomb: &tomb.Tomb{}}
 			tt.fn(cdc)
 			res := cdc.HasNext()
 			assert.Equal(t, res, tt.response)
@@ -138,15 +138,15 @@ func TestFlush(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	tmbWithCtx, _ := tomb.WithContext(ctx)
 	cdc := &StreamIterator{
-		buffer: make(chan sdk.Record, 1),
-		caches: make(chan []sdk.Record, 1),
+		buffer: make(chan opencdc.Record, 1),
+		caches: make(chan []opencdc.Record, 1),
 		tomb:   tmbWithCtx,
 	}
 	randomErr := errors.New("random error")
 	cdc.tomb.Go(cdc.flush)
 
-	in := sdk.Record{Position: []byte("some_position")}
-	cdc.caches <- []sdk.Record{in}
+	in := opencdc.Record{Position: []byte("some_position")}
+	cdc.caches <- []opencdc.Record{in}
 	for {
 		select {
 		case <-cdc.tomb.Dying():
@@ -167,7 +167,7 @@ func TestStartIterator(t *testing.T) {
 	conn := redigomock.NewConn()
 	tmbWithCtx, _ := tomb.WithContext(ctx)
 	conn.Command("XREAD", "COUNT", 10, "STREAMS", key, "0-0").Expect([]interface{}{[]interface{}{[]byte(key), []interface{}{[]interface{}{[]byte("1652107432000-0"), []interface{}{[]byte("key"), []byte("value")}}}}})
-	cdc := &StreamIterator{key: key, caches: make(chan []sdk.Record, 1), ticker: time.NewTicker(time.Millisecond), recordsPerCall: 10, lastID: "0-0", tomb: tmbWithCtx, client: conn}
+	cdc := &StreamIterator{key: key, caches: make(chan []opencdc.Record, 1), ticker: time.NewTicker(time.Millisecond), recordsPerCall: 10, lastID: "0-0", tomb: tmbWithCtx, client: conn}
 	_ = cdc.startIterator(ctx)()
 	select {
 	case cache := <-cdc.caches:
@@ -175,12 +175,12 @@ func TestStartIterator(t *testing.T) {
 		assert.Len(t, cache, 1)
 		createdAt, err := cache[0].Metadata.GetCreatedAt()
 		assert.NoError(t, err)
-		assert.Equal(t, sdk.Position("1652107432000-0"), cache[0].Position)
-		assert.Equal(t, sdk.OperationCreate, cache[0].Operation)
+		assert.Equal(t, opencdc.Position("1652107432000-0"), cache[0].Position)
+		assert.Equal(t, opencdc.OperationCreate, cache[0].Operation)
 		assert.Equal(t, key, cache[0].Metadata["key"])
 		assert.Equal(t, time.UnixMilli(1652107432000), createdAt)
-		assert.Equal(t, cache[0].Key, sdk.RawData(key))
-		assert.Equal(t, cache[0].Payload, sdk.Change{After: sdk.RawData(`{"key":"value"}`)})
+		assert.Equal(t, cache[0].Key, opencdc.RawData(key))
+		assert.Equal(t, cache[0].Payload, opencdc.Change{After: opencdc.RawData(`{"key":"value"}`)})
 	case <-ctx.Done():
 		t.Error("no data received in cache channel")
 	}
@@ -193,7 +193,7 @@ func TestStartIterator_Err(t *testing.T) {
 	conn := redigomock.NewConn()
 	tmbWithCtx, _ := tomb.WithContext(ctx)
 	conn.Command("XREAD", "COUNT", 10, "STREAMS", key, "0-0").Expect([]interface{}{[]interface{}{[]byte(key), []interface{}{[]interface{}{[]byte("1652107432000-0"), []interface{}{[]byte("key")}}}}})
-	cdc := &StreamIterator{key: key, caches: make(chan []sdk.Record, 1), ticker: time.NewTicker(time.Millisecond), recordsPerCall: 10, lastID: "0-0", tomb: tmbWithCtx, client: conn}
+	cdc := &StreamIterator{key: key, caches: make(chan []opencdc.Record, 1), ticker: time.NewTicker(time.Millisecond), recordsPerCall: 10, lastID: "0-0", tomb: tmbWithCtx, client: conn}
 	err := cdc.startIterator(ctx)()
 	assert.EqualError(t, err, "error converting stream data to records: error converting the []interface{} to map: arrInterfaceToMap expects even number of values result, got 1")
 }

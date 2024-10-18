@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/gomodule/redigo/redis"
 	"gopkg.in/tomb.v2"
@@ -29,7 +30,7 @@ import (
 type PubSubIterator struct {
 	key     string
 	psc     *redis.PubSubConn
-	records []sdk.Record
+	records []opencdc.Record
 	mux     *sync.Mutex
 	tomb    *tomb.Tomb
 }
@@ -43,7 +44,7 @@ func NewPubSubIterator(ctx context.Context, client redis.Conn, key string) (*Pub
 		psc:     psc,
 		mux:     &sync.Mutex{},
 		tomb:    tmbWithCtx,
-		records: make([]sdk.Record, 0),
+		records: make([]opencdc.Record, 0),
 	}
 
 	// subscribe to all the channels matching the passed pattern
@@ -63,7 +64,7 @@ func (i *PubSubIterator) HasNext() bool {
 }
 
 // Next pops and returns the first message from records queue
-func (i *PubSubIterator) Next(ctx context.Context) (sdk.Record, error) {
+func (i *PubSubIterator) Next(ctx context.Context) (opencdc.Record, error) {
 	// acquire lock before popping out the first record from records slice
 	// this is to avoid simultaneous write from startIterator goroutine
 	i.mux.Lock()
@@ -77,11 +78,11 @@ func (i *PubSubIterator) Next(ctx context.Context) (sdk.Record, error) {
 	}
 	select {
 	case <-i.tomb.Dying():
-		return sdk.Record{}, i.tomb.Err()
+		return opencdc.Record{}, i.tomb.Err()
 	case <-ctx.Done():
-		return sdk.Record{}, ctx.Err()
+		return opencdc.Record{}, ctx.Err()
 	default:
-		return sdk.Record{}, sdk.ErrBackoffRetry
+		return opencdc.Record{}, sdk.ErrBackoffRetry
 	}
 }
 
@@ -105,7 +106,7 @@ func (i *PubSubIterator) startListener(ctx context.Context) func() error {
 			default:
 				switch n := i.psc.Receive().(type) {
 				case redis.Message:
-					metadata := sdk.Metadata{
+					metadata := opencdc.Metadata{
 						"type":    "message",
 						"channel": n.Channel,
 					}
@@ -116,8 +117,8 @@ func (i *PubSubIterator) startListener(ctx context.Context) func() error {
 					i.records = append(i.records, sdk.Util.Source.NewRecordCreate(
 						[]byte(fmt.Sprintf("%s_%d", n.Channel, time.Now().UnixNano())),
 						metadata,
-						sdk.RawData(n.Channel),
-						sdk.RawData(n.Data),
+						opencdc.RawData(n.Channel),
+						opencdc.RawData(n.Data),
 					))
 					i.mux.Unlock()
 				case redis.Subscription:
