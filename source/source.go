@@ -22,6 +22,7 @@ import (
 
 	"github.com/conduitio-labs/conduit-connector-redis/config"
 	"github.com/conduitio-labs/conduit-connector-redis/source/iterator"
+	cconfig "github.com/conduitio/conduit-commons/config"
 	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/gomodule/redigo/redis"
@@ -46,53 +47,46 @@ func NewSource() sdk.Source {
 }
 
 // Parameters returns a map of named Parameters that describe how to configure the Source.
-func (s *Source) Parameters() config.Parameters {
-	return map[string]config.Parameter{
+func (s *Source) Parameters() cconfig.Parameters {
+	return map[string]cconfig.Parameter{
 		config.KeyHost: {
 			Default:     "localhost",
-			Required:    false,
-			Description: "host to the redis source.",
+			Description: "Host to the redis source",
 		},
 		config.KeyPort: {
 			Default:     "6379",
-			Required:    false,
-			Description: "port to the redis source",
+			Description: "Port to the redis source",
 		},
 		config.KeyRedisKey: {
 			Default:     "",
-			Required:    true,
-			Description: "key name for connector to read.",
+			Description: "Key name for connector to read",
+			Validations: []cconfig.Validation{cconfig.ValidationRequired{}},
 		},
 		config.KeyDatabase: {
 			Default:     "0",
-			Required:    false,
-			Description: "database name for the redis source",
+			Description: "Database name for the redis source",
 		},
 		config.KeyPassword: {
 			Default:     "",
-			Required:    false,
-			Description: "Password to the redis source.",
+			Description: "Password to the redis source",
 		},
 		config.KeyUsername: {
 			Default:     "",
-			Required:    false,
-			Description: "Username to the redis source.",
+			Description: "Username to the redis source",
 		},
 		config.KeyMode: {
 			Default:     "pubsub",
-			Required:    false,
 			Description: "Sets the connector's operation mode. Available modes: ['pubsub', 'stream']",
 		},
 		config.KeyPollingPeriod: {
 			Default:     "1s",
-			Required:    false,
 			Description: "Time duration between successive data polling from streams",
 		},
 	}
 }
 
 // Configure validates the passed config and prepares the source connector
-func (s *Source) Configure(ctx context.Context, cfg config.Config) error {
+func (s *Source) Configure(ctx context.Context, cfg cconfig.Config) error {
 	sdk.Logger(ctx).Trace().Msg("Configuring a Source Connector...")
 	conf, err := config.Parse(cfg)
 	if err != nil {
