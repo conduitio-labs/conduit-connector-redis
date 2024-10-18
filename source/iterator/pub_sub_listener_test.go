@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/gomodule/redigo/redis"
 	"github.com/rafaeljusto/redigomock"
@@ -31,16 +32,16 @@ import (
 func TestHasNext(t *testing.T) {
 	tests := []struct {
 		name     string
-		records  []sdk.Record
+		records  []opencdc.Record
 		response bool
 	}{
 		{
 			name:     "Has next",
-			records:  []sdk.Record{{}},
+			records:  []opencdc.Record{{}},
 			response: true,
 		}, {
 			name:     "no next value",
-			records:  []sdk.Record{},
+			records:  []opencdc.Record{},
 			response: false,
 		},
 	}
@@ -65,11 +66,11 @@ func TestNext(t *testing.T) {
 	tmbWithCtx, ctx := tomb.WithContext(ctx)
 	var cdc PubSubIterator
 	cdc.tomb = tmbWithCtx
-	dummyRec := sdk.Record{
+	dummyRec := opencdc.Record{
 		Position: nil,
 		Metadata: nil,
 		Key:      nil,
-		Payload:  sdk.Change{After: sdk.RawData("dummy_payload")},
+		Payload:  opencdc.Change{After: opencdc.RawData("dummy_payload")},
 	}
 	cdc.mux = &sync.Mutex{}
 	cdc.records = append(cdc.records, dummyRec)
@@ -77,11 +78,11 @@ func TestNext(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, res, dummyRec)
 	res, err = cdc.Next(ctx)
-	assert.Equal(t, sdk.Record{}, res)
+	assert.Equal(t, opencdc.Record{}, res)
 	assert.EqualError(t, err, sdk.ErrBackoffRetry.Error())
 	cancel()
 	res, err = cdc.Next(ctx)
-	assert.Equal(t, sdk.Record{}, res)
+	assert.Equal(t, opencdc.Record{}, res)
 	assert.EqualError(t, err, "context canceled")
 }
 
@@ -91,7 +92,7 @@ func TestNewCDCIterator(t *testing.T) {
 	response := PubSubIterator{
 		key:     redisChannel,
 		psc:     &redis.PubSubConn{Conn: conn},
-		records: []sdk.Record{},
+		records: []opencdc.Record{},
 		mux:     &sync.Mutex{},
 	}
 
@@ -136,7 +137,7 @@ func TestNewCDCIterator_Next(t *testing.T) {
 	response := PubSubIterator{
 		key:     redisChannel,
 		psc:     &redis.PubSubConn{Conn: conn},
-		records: []sdk.Record{},
+		records: []opencdc.Record{},
 		mux:     &sync.Mutex{},
 	}
 
@@ -154,7 +155,7 @@ func TestNewCDCIterator_Next(t *testing.T) {
 	mr.Publish(redisChannel, testMessage)
 	mr.Publish(redisChannel, testMessage1)
 
-	var rec sdk.Record
+	var rec opencdc.Record
 	ticker := time.NewTicker(400 * time.Millisecond)
 	defer ticker.Stop()
 	retryCount := 0

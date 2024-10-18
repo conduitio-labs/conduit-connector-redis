@@ -21,7 +21,7 @@ import (
 
 	miniredis "github.com/alicebob/miniredis/v2"
 	"github.com/conduitio-labs/conduit-connector-redis/config"
-	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/conduitio/conduit-commons/opencdc"
 	"github.com/gomodule/redigo/redis"
 	"github.com/rafaeljusto/redigomock"
 	"github.com/stretchr/testify/assert"
@@ -186,15 +186,15 @@ func TestWrite(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		data        sdk.Record
+		data        opencdc.Record
 		fn          func(conn *redigomock.Conn)
 		err         error
 		destination Destination
 	}{
 		{
 			name: "invalid channel",
-			data: sdk.Record{
-				Payload: sdk.Change{After: sdk.RawData(validJSON)},
+			data: opencdc.Record{
+				Payload: opencdc.Change{After: opencdc.RawData(validJSON)},
 			},
 			fn: func(conn *redigomock.Conn) {
 				conn.GenericCommand("PUBLISH").ExpectError(fmt.Errorf("invalid channel"))
@@ -208,8 +208,8 @@ func TestWrite(t *testing.T) {
 			},
 		}, {
 			name: "pubsub success",
-			data: sdk.Record{
-				Payload: sdk.Change{After: sdk.RawData(validJSON)},
+			data: opencdc.Record{
+				Payload: opencdc.Change{After: opencdc.RawData(validJSON)},
 			},
 			fn: func(conn *redigomock.Conn) {
 				conn.GenericCommand("PUBLISH").Expect(1).ExpectError(nil)
@@ -224,8 +224,8 @@ func TestWrite(t *testing.T) {
 		},
 		{
 			name: "stream success",
-			data: sdk.Record{
-				Payload: sdk.Change{After: sdk.RawData(validJSON)},
+			data: opencdc.Record{
+				Payload: opencdc.Change{After: opencdc.RawData(validJSON)},
 			},
 			err: nil,
 			fn: func(conn *redigomock.Conn) {
@@ -239,8 +239,8 @@ func TestWrite(t *testing.T) {
 			},
 		}, {
 			name: "stream failed",
-			data: sdk.Record{
-				Payload: sdk.Change{After: sdk.RawData(validJSON)},
+			data: opencdc.Record{
+				Payload: opencdc.Change{After: opencdc.RawData(validJSON)},
 			},
 			err: fmt.Errorf("error streaming message to key(dummy_key):dummy_error"),
 			fn: func(conn *redigomock.Conn) {
@@ -255,8 +255,8 @@ func TestWrite(t *testing.T) {
 		},
 		{
 			name: "invalid mode",
-			data: sdk.Record{
-				Payload: sdk.Change{After: sdk.RawData(invalidJSON)},
+			data: opencdc.Record{
+				Payload: opencdc.Change{After: opencdc.RawData(invalidJSON)},
 			},
 			err: fmt.Errorf("invalid mode(test) encountered"),
 			destination: Destination{
@@ -274,7 +274,7 @@ func TestWrite(t *testing.T) {
 				tt.fn(conn)
 			}
 			tt.destination.client = conn
-			n, err := tt.destination.Write(context.Background(), []sdk.Record{tt.data})
+			n, err := tt.destination.Write(context.Background(), []opencdc.Record{tt.data})
 			if tt.err != nil {
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, tt.err.Error())

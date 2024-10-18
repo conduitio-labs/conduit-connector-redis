@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/gomodule/redigo/redis"
 	"gopkg.in/tomb.v2"
@@ -41,8 +42,8 @@ type StreamIterator struct {
 	recordsPerCall  int
 	pollingInterval time.Duration
 	ticker          *time.Ticker
-	caches          chan []sdk.Record
-	buffer          chan sdk.Record
+	caches          chan []opencdc.Record
+	buffer          chan opencdc.Record
 }
 
 // NewStreamIterator creates a new instance of redis stream iterator and starts polling redis stream for new changes
@@ -51,7 +52,7 @@ func NewStreamIterator(ctx context.Context,
 	client redis.Conn,
 	key string,
 	pollingInterval time.Duration,
-	position sdk.Position,
+	position opencdc.Position,
 ) (*StreamIterator, error) {
 	keyType, err := redis.String(client.Do("TYPE", key))
 	if err != nil {
@@ -80,8 +81,8 @@ func NewStreamIterator(ctx context.Context,
 		ticker:          ticker,
 		// keeping the buffer length as 1, so that we are not blocked by one cache
 		// we have other batch of records ready once first batch is read
-		caches: make(chan []sdk.Record, 1),
-		buffer: make(chan sdk.Record, 1),
+		caches: make(chan []opencdc.Record, 1),
+		buffer: make(chan opencdc.Record, 1),
 	}
 
 	cdc.tomb.Go(cdc.startIterator(ctx))
@@ -97,14 +98,14 @@ func (i *StreamIterator) HasNext() bool {
 
 // Next returns the next record in buffer and error in case there are no more records
 // and there was an error leading to tomb dying or context was cancelled
-func (i *StreamIterator) Next(ctx context.Context) (sdk.Record, error) {
+func (i *StreamIterator) Next(ctx context.Context) (opencdc.Record, error) {
 	select {
 	case rec := <-i.buffer:
 		return rec, nil
 	case <-i.tomb.Dying():
-		return sdk.Record{}, i.tomb.Err()
+		return opencdc.Record{}, i.tomb.Err()
 	case <-ctx.Done():
-		return sdk.Record{}, ctx.Err()
+		return opencdc.Record{}, ctx.Err()
 	}
 }
 
@@ -174,16 +175,16 @@ func (i *StreamIterator) flush() error {
 	}
 }
 
-// toRecords parses the XREAD command's response and returns a slice of sdk.Record
-func toRecords(resp []interface{}) ([]sdk.Record, error) {
-	records := make([]sdk.Record, 0)
+// toRecords parses the XREAD command's response and returns a slice of opencdc.Record
+func toRecords(resp []interface{}) ([]opencdc.Record, error) {
+	records := make([]opencdc.Record, 0)
 	for _, iKey := range resp {
 		key, idList, err := parseKeyData(iKey)
 		if err != nil {
 			return nil, err
 		}
 
-		metadata := sdk.Metadata{
+		metadata := opencdc.Metadata{
 			"key": string(key),
 		}
 
@@ -206,8 +207,8 @@ func toRecords(resp []interface{}) ([]sdk.Record, error) {
 			records = append(records, sdk.Util.Source.NewRecordCreate(
 				position,
 				metadata,
-				sdk.RawData(key),
-				sdk.RawData(payload),
+				opencdc.RawData(key),
+				opencdc.RawData(payload),
 			))
 		}
 	}

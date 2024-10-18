@@ -20,6 +20,8 @@ import (
 	"fmt"
 
 	"github.com/conduitio-labs/conduit-connector-redis/config"
+	cconfig "github.com/conduitio/conduit-commons/config"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/gomodule/redigo/redis"
 )
@@ -42,48 +44,42 @@ func NewDestination() sdk.Destination {
 }
 
 // Parameters returns a map of named Parameters that describe how to configure the Source.
-func (d *Destination) Parameters() map[string]sdk.Parameter {
-	return map[string]sdk.Parameter{
+func (d *Destination) Parameters() cconfig.Parameters {
+	return map[string]cconfig.Parameter{
 		config.KeyHost: {
 			Default:     "localhost",
-			Required:    false,
-			Description: "host to the redis source.",
+			Description: "Host to the redis source",
 		},
 		config.KeyPort: {
 			Default:     "6379",
-			Required:    false,
-			Description: "port to the redis source",
+			Description: "Port to the redis source",
 		},
 		config.KeyRedisKey: {
 			Default:     "",
-			Required:    true,
-			Description: "key name for connector to read.",
+			Description: "Key name for connector to read",
+			Validations: []cconfig.Validation{cconfig.ValidationRequired{}},
 		},
 		config.KeyDatabase: {
 			Default:     "0",
-			Required:    false,
-			Description: "database name for the redis source",
+			Description: "Database name for the redis source",
 		},
 		config.KeyPassword: {
 			Default:     "",
-			Required:    false,
-			Description: "Password to the redis source.",
+			Description: "Password to the redis source",
 		},
 		config.KeyUsername: {
 			Default:     "",
-			Required:    false,
-			Description: "Username to the redis source.",
+			Description: "Username to the redis source",
 		},
 		config.KeyMode: {
 			Default:     "pubsub",
-			Required:    false,
 			Description: "Sets the connector's operation mode. Available modes: ['pubsub', 'stream']",
 		},
 	}
 }
 
 // Configure sets up the destination by validating and parsing the config
-func (d *Destination) Configure(ctx context.Context, cfg map[string]string) error {
+func (d *Destination) Configure(ctx context.Context, cfg cconfig.Config) error {
 	sdk.Logger(ctx).Trace().Msg("Configuring a Destination Connector...")
 	conf, err := config.Parse(cfg)
 	if err != nil {
@@ -138,7 +134,7 @@ func (d *Destination) validateKey(client redis.Conn) error {
 
 // Write receives the record to be written and based on the mode either publishes to PUB/SUB channel
 // or add as key-value pair to stream using XADD, the id of the newly added key is generated automatically
-func (d *Destination) Write(ctx context.Context, rec []sdk.Record) (int, error) {
+func (d *Destination) Write(ctx context.Context, rec []opencdc.Record) (int, error) {
 	key := d.config.RedisKey
 
 	switch d.config.Mode {
@@ -196,7 +192,7 @@ func (d *Destination) doWithCtx(ctx context.Context, cmd string, args ...interfa
 }
 
 // payloadToStreamArgs converts the payload from the record to args to be sent in redis command
-func payloadToStreamArgs(payload sdk.Data) ([]interface{}, error) {
+func payloadToStreamArgs(payload opencdc.Data) ([]interface{}, error) {
 	recMap := make(map[string]interface{})
 
 	if err := json.Unmarshal(payload.Bytes(), &recMap); err != nil {

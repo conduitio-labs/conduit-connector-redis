@@ -16,7 +16,6 @@ package redis
 
 import (
 	"fmt"
-
 	"math/rand"
 	"strings"
 	"testing"
@@ -24,6 +23,7 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/conduitio-labs/conduit-connector-redis/config"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"go.uber.org/goleak"
 )
@@ -74,12 +74,12 @@ type AcceptanceTestDriver struct {
 }
 
 // GenerateRecord overrides the pre-defined generate record function to generate the records in required format.
-func (d AcceptanceTestDriver) GenerateRecord(*testing.T, sdk.Operation) sdk.Record {
-	return sdk.Record{
-		Operation: sdk.OperationCreate,
-		Metadata:  sdk.Metadata{"key": key},
-		Key:       sdk.RawData(key),
-		Payload: sdk.Change{After: sdk.RawData(
+func (d AcceptanceTestDriver) GenerateRecord(*testing.T, opencdc.Operation) opencdc.Record {
+	return opencdc.Record{
+		Operation: opencdc.OperationCreate,
+		Metadata:  opencdc.Metadata{"key": key},
+		Key:       opencdc.RawData(key),
+		Payload: opencdc.Change{After: opencdc.RawData(
 			fmt.Sprintf(`{"%s":"%s"}`, d.randString(32), d.randString(32)),
 		)},
 	}

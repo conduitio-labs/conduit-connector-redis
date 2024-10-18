@@ -24,6 +24,7 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/conduitio-labs/conduit-connector-redis/config"
 	"github.com/conduitio-labs/conduit-connector-redis/source/mocks"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -115,7 +116,7 @@ func TestOpen(t *testing.T) {
 			s.config.Port = mr.Port()
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			err = s.Open(ctx, sdk.Position{})
+			err = s.Open(ctx, opencdc.Position{})
 			if tt.err != nil {
 				assert.EqualError(t, err, tt.err.Error())
 			} else {
@@ -138,19 +139,19 @@ func TestOpenWithUserAuth(t *testing.T) {
 	s.config.Password = "dummy_password"
 	s.config.PollingPeriod = time.Millisecond
 	mr.RequireUserAuth(s.config.Username, s.config.Password)
-	assert.NoError(t, s.Open(ctx, sdk.Position{}))
+	assert.NoError(t, s.Open(ctx, opencdc.Position{}))
 }
 
 func TestRead(t *testing.T) {
 	tests := []struct {
 		name     string
-		response sdk.Record
+		response opencdc.Record
 		err      error
 		source   Source
 	}{
 		{
 			name:     "no records",
-			response: sdk.Record{},
+			response: opencdc.Record{},
 			err:      sdk.ErrBackoffRetry,
 			source: Source{
 				iterator: func() Iterator {
@@ -162,26 +163,26 @@ func TestRead(t *testing.T) {
 		},
 		{
 			name:     "records",
-			response: sdk.Record{},
+			response: opencdc.Record{},
 			err:      errors.New("mock error"),
 			source: Source{
 				iterator: func() Iterator {
 					m := &mocks.Iterator{}
 					m.On("HasNext", mock.Anything).Return(true)
-					m.On("Next", mock.Anything).Return(sdk.Record{}, errors.New("mock error"))
+					m.On("Next", mock.Anything).Return(opencdc.Record{}, errors.New("mock error"))
 					return m
 				}(),
 			},
 		},
 		{
 			name:     "valid record",
-			response: sdk.Record{},
+			response: opencdc.Record{},
 			err:      nil,
 			source: Source{
 				iterator: func() Iterator {
 					m := &mocks.Iterator{}
 					m.On("HasNext", mock.Anything).Return(true)
-					m.On("Next", mock.Anything).Return(sdk.Record{}, nil)
+					m.On("Next", mock.Anything).Return(opencdc.Record{}, nil)
 					return m
 				}(),
 			},
@@ -248,7 +249,7 @@ func TestAck(t *testing.T) {
 		err:  nil,
 	}
 	t.Run(test.name, func(t *testing.T) {
-		err := s.Ack(context.Background(), sdk.Position{})
+		err := s.Ack(context.Background(), opencdc.Position{})
 		if test.err != nil {
 			assert.NotNil(t, test.err, err)
 		} else {

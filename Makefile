@@ -12,12 +12,6 @@ test:
 lint:
 	golangci-lint run
 
-.PHONY: clean
-clean:
-	golangci-lint cache clean
-	go clean -testcache
-	rm conduit-connector-redis
-
 .PHONY: generate
 generate:
 	go generate ./...

@@ -22,6 +22,8 @@ import (
 
 	"github.com/conduitio-labs/conduit-connector-redis/config"
 	"github.com/conduitio-labs/conduit-connector-redis/source/iterator"
+	cconfig "github.com/conduitio/conduit-commons/config"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/gomodule/redigo/redis"
 )
@@ -35,7 +37,7 @@ type Source struct {
 
 type Iterator interface {
 	HasNext() bool
-	Next(ctx context.Context) (sdk.Record, error)
+	Next(ctx context.Context) (opencdc.Record, error)
 	Stop() error
 }
 
@@ -45,53 +47,46 @@ func NewSource() sdk.Source {
 }
 
 // Parameters returns a map of named Parameters that describe how to configure the Source.
-func (s *Source) Parameters() map[string]sdk.Parameter {
-	return map[string]sdk.Parameter{
+func (s *Source) Parameters() cconfig.Parameters {
+	return map[string]cconfig.Parameter{
 		config.KeyHost: {
 			Default:     "localhost",
-			Required:    false,
-			Description: "host to the redis source.",
+			Description: "Host to the redis source",
 		},
 		config.KeyPort: {
 			Default:     "6379",
-			Required:    false,
-			Description: "port to the redis source",
+			Description: "Port to the redis source",
 		},
 		config.KeyRedisKey: {
 			Default:     "",
-			Required:    true,
-			Description: "key name for connector to read.",
+			Description: "Key name for connector to read",
+			Validations: []cconfig.Validation{cconfig.ValidationRequired{}},
 		},
 		config.KeyDatabase: {
 			Default:     "0",
-			Required:    false,
-			Description: "database name for the redis source",
+			Description: "Database name for the redis source",
 		},
 		config.KeyPassword: {
 			Default:     "",
-			Required:    false,
-			Description: "Password to the redis source.",
+			Description: "Password to the redis source",
 		},
 		config.KeyUsername: {
 			Default:     "",
-			Required:    false,
-			Description: "Username to the redis source.",
+			Description: "Username to the redis source",
 		},
 		config.KeyMode: {
 			Default:     "pubsub",
-			Required:    false,
 			Description: "Sets the connector's operation mode. Available modes: ['pubsub', 'stream']",
 		},
 		config.KeyPollingPeriod: {
 			Default:     "1s",
-			Required:    false,
 			Description: "Time duration between successive data polling from streams",
 		},
 	}
 }
 
 // Configure validates the passed config and prepares the source connector
-func (s *Source) Configure(ctx context.Context, cfg map[string]string) error {
+func (s *Source) Configure(ctx context.Context, cfg cconfig.Config) error {
 	sdk.Logger(ctx).Trace().Msg("Configuring a Source Connector...")
 	conf, err := config.Parse(cfg)
 	if err != nil {
@@ -102,7 +97,7 @@ func (s *Source) Configure(ctx context.Context, cfg map[string]string) error {
 }
 
 // Open prepare the plugin to start reading records from the given position
-func (s *Source) Open(ctx context.Context, position sdk.Position) error {
+func (s *Source) Open(ctx context.Context, position opencdc.Position) error {
 	address := s.config.Host + ":" + s.config.Port
 	dialOptions := make([]redis.DialOption, 0)
 	if s.config.Password != "" {
@@ -137,19 +132,19 @@ func (s *Source) Open(ctx context.Context, position sdk.Position) error {
 }
 
 // Read gets the next object
-func (s *Source) Read(ctx context.Context) (sdk.Record, error) {
+func (s *Source) Read(ctx context.Context) (opencdc.Record, error) {
 	if !s.iterator.HasNext() {
-		return sdk.Record{}, sdk.ErrBackoffRetry
+		return opencdc.Record{}, sdk.ErrBackoffRetry
 	}
 	rec, err := s.iterator.Next(ctx)
 	if err != nil {
-		return sdk.Record{}, fmt.Errorf("error fetching next record: %w", err)
+		return opencdc.Record{}, fmt.Errorf("error fetching next record: %w", err)
 	}
 	return rec, nil
 }
 
 // Ack is called by the conduit server after the record has been successfully processed by all destination connectors
-func (s *Source) Ack(ctx context.Context, position sdk.Position) error {
+func (s *Source) Ack(ctx context.Context, position opencdc.Position) error {
 	sdk.Logger(ctx).Debug().
 		Str("position", string(position)).
 		Str("mode", string(s.config.Mode)).
