@@ -4,7 +4,7 @@ go 1.24.2
 
 require (
 	github.com/alicebob/miniredis/v2 v2.35.0
-	github.com/conduitio/conduit-commons v0.5.4
+	github.com/conduitio/conduit-commons v0.6.0
 	github.com/conduitio/conduit-connector-sdk v0.12.0
 	github.com/gomodule/redigo v1.9.2
 	github.com/rafaeljusto/redigomock v2.4.0+incompatible
